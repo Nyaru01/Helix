@@ -77,16 +77,9 @@ public partial class App : System.Windows.Application
         {
             var update = await UpdateService.CheckAsync();
             if (update is null) return;
-            var box = new Wpf.Ui.Controls.MessageBox
-            {
-                Owner = window,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                Title = "Update available",
-                Content = $"Helix Blast {update.Version} is available. It can be installed automatically, then the application will restart.",
-                PrimaryButtonText = "Install now",
-                CloseButtonText = "Later"
-            };
-            if (await box.ShowDialogAsync() != Wpf.Ui.Controls.MessageBoxResult.Primary) return;
+            if (!await HelixDialog.ShowAsync(window, "Update available",
+                    $"Helix Blast {update.Version} is available. It can be installed automatically, then the application will restart.",
+                    "Install now", "Later")) return;
 
             window.IsEnabled = false;
             var installerPath = await UpdateService.DownloadAsync(update);

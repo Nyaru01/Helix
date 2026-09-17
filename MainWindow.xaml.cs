@@ -26,6 +26,7 @@ public partial class MainWindow : FluentWindow
     private string _resultProgram = "blastn";
     private double _resultIdentity;
     private double _resultCoverage;
+    private bool _resultsExpanded;
 
     public MainWindow()
     {
@@ -53,6 +54,19 @@ public partial class MainWindow : FluentWindow
     }
 
     private void ResultsFilterChanged(object sender, RoutedEventArgs e) => _resultView?.Refresh();
+
+    private void ExpandResults_Click(object sender, RoutedEventArgs e)
+    {
+        _resultsExpanded = !_resultsExpanded;
+        QueryPanel.Visibility = _resultsExpanded ? Visibility.Collapsed : Visibility.Visible;
+        SettingsPanel.Visibility = _resultsExpanded ? Visibility.Collapsed : Visibility.Visible;
+        QueryResultsGap.Height = new GridLength(_resultsExpanded ? 0 : 16);
+        ContentColumnGap.Width = new GridLength(_resultsExpanded ? 0 : 18);
+        SettingsColumn.MinWidth = _resultsExpanded ? 0 : 365;
+        SettingsColumn.Width = _resultsExpanded ? new GridLength(0) : new GridLength(1, GridUnitType.Star);
+        ExpandResultsButton.Content = _resultsExpanded ? "Restore layout" : "Expand results";
+        ExpandResultsButton.ToolTip = _resultsExpanded ? "Show query and search settings" : "Give the results the full workspace";
+    }
 
     private void UpdateResultsSummary()
     {
@@ -366,16 +380,8 @@ public partial class MainWindow : FluentWindow
         {
             await ResultsExportService.ExportHtmlAsync(dialog.FileName, _resultQueryLabel, _resultProgram,
                 _resultIdentity, _resultCoverage, _hits.ToList());
-            var box = new Wpf.Ui.Controls.MessageBox
-            {
-                Owner = this,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                Title = "Report ready",
-                Content = $"HTML report saved to:\n{dialog.FileName}",
-                PrimaryButtonText = "Open report",
-                CloseButtonText = "Close"
-            };
-            if (await box.ShowDialogAsync() == Wpf.Ui.Controls.MessageBoxResult.Primary)
+            if (await HelixDialog.ShowAsync(this, "Report ready",
+                    $"HTML report saved to:\n{dialog.FileName}", "Open report", "Close"))
                 Process.Start(new ProcessStartInfo(dialog.FileName) { UseShellExecute = true });
         }
         catch (Exception ex)
@@ -428,16 +434,9 @@ public partial class MainWindow : FluentWindow
             }
 
             StatusText.Text = $"Version {update.Version} is available.";
-            var box = new Wpf.Ui.Controls.MessageBox
-            {
-                Owner = this,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                Title = "Update available",
-                Content = $"Helix Blast {update.Version} is available.\n\nThe update will be downloaded and installed automatically, then the application will restart.",
-                PrimaryButtonText = "Install now",
-                CloseButtonText = "Later"
-            };
-            if (await box.ShowDialogAsync() != Wpf.Ui.Controls.MessageBoxResult.Primary)
+            if (!await HelixDialog.ShowAsync(this, "Update available",
+                    $"Helix Blast {update.Version} is available.\n\nThe update will be downloaded and installed automatically, then the application will restart.",
+                    "Install now", "Later"))
             {
                 StatusText.Text = "Update postponed.";
                 return;
@@ -466,29 +465,7 @@ public partial class MainWindow : FluentWindow
         _ => (SequenceType.Nucleotide, SequenceType.Nucleotide)
     };
 
-    private async Task ShowInfoAsync(string title, string message)
-    {
-        var box = new Wpf.Ui.Controls.MessageBox
-        {
-            Owner = this,
-            WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            Title = title,
-            Content = message,
-            CloseButtonText = "OK"
-        };
-        await box.ShowDialogAsync();
-    }
+    private Task ShowInfoAsync(string title, string message) => HelixDialog.ShowAsync(this, title, message);
 
-    private async Task ShowErrorAsync(string title, string message)
-    {
-        var box = new Wpf.Ui.Controls.MessageBox
-        {
-            Owner = this,
-            WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            Title = title,
-            Content = message,
-            CloseButtonText = "OK"
-        };
-        await box.ShowDialogAsync();
-    }
+    private Task ShowErrorAsync(string title, string message) => HelixDialog.ShowAsync(this, title, message);
 }

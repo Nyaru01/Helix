@@ -1,6 +1,6 @@
 ; Build with Inno Setup 6: iscc installer\HelixBlast.iss
 #define MyAppName "Helix Blast"
-#define MyAppVersion "0.3.8"
+#define MyAppVersion "0.3.9"
 #define MyAppPublisher "Helix Blast"
 #define MyAppExeName "HelixBlast.exe"
 

@@ -1,0 +1,43 @@
+<ui:FluentWindow x:Class="LocalBlast.Windows.HelixDialog"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                 Title="Helix Blast" Width="500" MinHeight="185" MaxHeight="520"
+                 SizeToContent="Height" ResizeMode="NoResize" ShowInTaskbar="False"
+                 WindowStartupLocation="CenterOwner" ExtendsContentIntoTitleBar="True"
+                 Background="#091522" Foreground="#F3FBFF" Icon="/app.ico">
+    <Grid Background="#091522">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar x:Name="DialogTitleBar" Grid.Row="0" Title="Helix Blast"
+                     ShowMinimize="False" ShowMaximize="False"/>
+
+        <Border Grid.Row="1" Margin="12,0,12,12" Padding="20,18,20,16"
+                Background="#152333" BorderBrush="#2A4054" BorderThickness="1" CornerRadius="12">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock x:Name="HeadingText" Foreground="#F3FBFF" FontSize="18"
+                           FontWeight="SemiBold" TextWrapping="Wrap"/>
+                <ScrollViewer Grid.Row="1" MaxHeight="300" Margin="0,14,0,20"
+                              VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <TextBlock x:Name="MessageText" Foreground="#BDD0DB" FontSize="13"
+                               TextWrapping="Wrap"/>
+                </ScrollViewer>
+                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <ui:Button x:Name="SecondaryButton" Appearance="Secondary" MinWidth="88"
+                               Margin="0,0,8,0" Click="SecondaryButton_Click" IsCancel="True"/>
+                    <ui:Button x:Name="PrimaryButton" Appearance="Primary" MinWidth="104"
+                               Click="PrimaryButton_Click" IsDefault="True"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</ui:FluentWindow>

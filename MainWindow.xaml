@@ -57,18 +57,18 @@
         <Grid Grid.Row="2" Margin="20,18,20,18">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1.5*" MinWidth="580"/>
-                <ColumnDefinition Width="18"/>
-                <ColumnDefinition Width="1*" MinWidth="365"/>
+                <ColumnDefinition x:Name="ContentColumnGap" Width="18"/>
+                <ColumnDefinition x:Name="SettingsColumn" Width="1*" MinWidth="365"/>
             </Grid.ColumnDefinitions>
 
             <Grid Grid.Column="0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="16"/>
+                    <RowDefinition x:Name="QueryResultsGap" Height="16"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <Border Grid.Row="0" Background="#152333" BorderBrush="#2A4054" BorderThickness="1" CornerRadius="12">
+                <Border x:Name="QueryPanel" Grid.Row="0" Background="#152333" BorderBrush="#2A4054" BorderThickness="1" CornerRadius="12">
                     <Grid>
                         <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                         <Border Padding="16,12" BorderBrush="#2A4054" BorderThickness="0,0,0,1">
@@ -106,6 +106,7 @@
                                 <TextBlock x:Name="ResultsSummaryText" Text="No analysis yet" Foreground="#8DA7B8" FontSize="11" Margin="0,3,0,0"/>
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:Button x:Name="ExpandResultsButton" Content="Expand results" Click="ExpandResults_Click" Appearance="Secondary" Margin="0,0,6,0" ToolTip="Give the results the full workspace"/>
                                 <ui:Button x:Name="ExportCsvButton" Content="CSV" Click="ExportCsv_Click" Appearance="Secondary" IsEnabled="False" Margin="0,0,6,0"/>
                                 <ui:Button x:Name="ExportHtmlButton" Content="HTML report" Click="ExportHtml_Click" Appearance="Secondary" IsEnabled="False" Margin="0,0,6,0"/>
                                 <ui:Button x:Name="ExportPdfButton" Content="PDF" Click="ExportPdf_Click" Appearance="Secondary" IsEnabled="False"/>
@@ -139,7 +140,7 @@
                 </Border>
             </Grid>
 
-            <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <ScrollViewer x:Name="SettingsPanel" Grid.Column="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                 <StackPanel>
                     <Border Background="#152333" BorderBrush="#2A4054" BorderThickness="1" CornerRadius="12" Margin="0,0,0,16">
                         <StackPanel>

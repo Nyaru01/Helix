@@ -136,24 +136,12 @@ public partial class ResultsWindow : FluentWindow
         catch (Exception ex) { AppLogger.Error("Could not export the PDF report.", ex); await ShowInfoAsync("PDF export failed", ex.Message); }
     }
 
-    private async Task ShowInfoAsync(string title, string message)
-    {
-        var box = new Wpf.Ui.Controls.MessageBox { Owner = this, WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner, Title = title, Content = message, CloseButtonText = "OK" };
-        await box.ShowDialogAsync();
-    }
+    private Task ShowInfoAsync(string title, string message) => HelixDialog.ShowAsync(this, title, message);
 
     private async Task ShowOpenReportAsync(string path)
     {
-        var box = new Wpf.Ui.Controls.MessageBox
-        {
-            Owner = this,
-            WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner,
-            Title = "Report ready",
-            Content = $"HTML report saved to:\n{path}",
-            PrimaryButtonText = "Open report",
-            CloseButtonText = "Close"
-        };
-        if (await box.ShowDialogAsync() == MessageBoxResult.Primary)
+        if (await HelixDialog.ShowAsync(this, "Report ready", $"HTML report saved to:\n{path}",
+                "Open report", "Close"))
             Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
     }
 }
