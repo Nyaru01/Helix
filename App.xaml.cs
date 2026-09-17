@@ -26,8 +26,19 @@ public partial class App : System.Windows.Application
         {
             timer.Stop();
             splash.Close();
-            _mainWindow.Show();
-            _ = CheckForUpdateAsync(_mainWindow);
+            try
+            {
+                _mainWindow.Show();
+                _ = CheckForUpdateAsync(_mainWindow);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error("Helix Blast could not open its main window.", ex);
+                System.Windows.MessageBox.Show(
+                    $"Helix Blast could not start.\n\n{ex.Message}\n\nDetails: {AppLogger.LogDirectory}",
+                    "Helix Blast startup error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Shutdown(1);
+            }
         };
         timer.Start();
     }
