@@ -3,72 +3,80 @@
                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                  xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
                  Title="Helix Blast results"
-                 Width="1320"
-                 Height="760"
-                 MinWidth="900"
-                 MinHeight="560"
+                 Width="1380" Height="800" MinWidth="960" MinHeight="600"
                  WindowStartupLocation="CenterOwner"
                  ExtendsContentIntoTitleBar="True"
                  WindowBackdropType="Mica">
-    <Grid>
+    <Grid Background="#07111E">
         <Grid.RowDefinitions>
-            <RowDefinition Height="48" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
+            <RowDefinition Height="48"/><RowDefinition Height="82"/><RowDefinition Height="92"/><RowDefinition Height="54"/><RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-
         <ui:TitleBar Grid.Row="0" x:Name="ResultsTitleBar" Title="BLAST results" />
 
-        <ui:Card Grid.Row="1" Margin="20,14,20,12" Padding="16">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel>
-                    <TextBlock x:Name="SummaryText" FontSize="17" FontWeight="SemiBold" />
-                    <TextBlock Text="Double-click a row to inspect the Query / Sbjct alignment." Margin="0,4,0,0" Opacity="0.6" />
+        <Border Grid.Row="1" Background="#0A1726" BorderBrush="#203549" BorderThickness="0,0,0,1">
+            <Grid Margin="22,0">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="Analysis results" FontSize="22" FontWeight="SemiBold" />
+                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                        <TextBlock x:Name="SummaryText" Opacity="0.62" FontSize="12" />
+                        <TextBlock Text="  ·  " Opacity="0.3" />
+                        <TextBlock x:Name="ThresholdText" Opacity="0.62" FontSize="12" />
+                    </StackPanel>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock x:Name="ThresholdText" VerticalAlignment="Center" Opacity="0.65" Margin="0,0,12,0" />
-                    <ui:Button Content="Export CSV" Click="ExportCsv_Click" />
-                    <ui:Button Content="Export HTML" Click="ExportHtml_Click" Margin="8,0,0,0" />
-                    <ui:Button Content="Export PDF" Click="ExportPdf_Click" Margin="8,0,0,0" />
+                    <ui:Button Content="CSV" Click="ExportCsv_Click" Appearance="Secondary" MinWidth="72" />
+                    <ui:Button Content="HTML report" Click="ExportHtml_Click" Appearance="Secondary" Margin="8,0,0,0" MinWidth="108" />
+                    <ui:Button Content="PDF" Click="ExportPdf_Click" Appearance="Secondary" Margin="8,0,0,0" MinWidth="72" />
                 </StackPanel>
             </Grid>
-        </ui:Card>
+        </Border>
 
-        <Grid Grid.Row="2" Margin="20,0,20,20">
-            <Grid.RowDefinitions><RowDefinition Height="42"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-            <Grid Grid.Row="0" Margin="0,0,0,8">
-                <Grid.ColumnDefinitions><ColumnDefinition Width="280"/><ColumnDefinition Width="12"/><ColumnDefinition Width="170"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                <TextBox x:Name="SearchTextBox" ToolTip="Search sample, contig or file" TextChanged="FilterChanged" />
-                <ComboBox x:Name="StatusFilterComboBox" Grid.Column="2" SelectionChanged="FilterChanged"><ComboBoxItem Content="All statuses" IsSelected="True"/><ComboBoxItem Content="Present"/><ComboBoxItem Content="Below thresholds"/><ComboBoxItem Content="No hit"/><ComboBoxItem Content="Error"/></ComboBox>
-            </Grid>
-            <Border Grid.Row="1" CornerRadius="10" ClipToBounds="True">
-                <DataGrid x:Name="ResultsGrid"
-                      AutoGenerateColumns="False"
-                      IsReadOnly="True"
-                      CanUserAddRows="False"
-                      CanUserDeleteRows="False"
-                      SelectionMode="Single"
-                      SelectionUnit="FullRow"
-                      MouseDoubleClick="ResultsGrid_MouseDoubleClick"
-                      HeadersVisibility="Column"
-                      GridLinesVisibility="Horizontal">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Genome / file" Binding="{Binding GenomeName}" Width="150" />
-                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="135" />
-                    <DataGridTextColumn Header="Identity" Binding="{Binding IdentityDisplay}" Width="90" />
-                    <DataGridTextColumn Header="Coverage" Binding="{Binding CoverageDisplay}" Width="90" />
-                    <DataGridTextColumn Header="Subject / contig" Binding="{Binding SubjectId}" Width="*" MinWidth="220" />
-                    <DataGridTextColumn Header="Coordinates" Binding="{Binding CoordinatesDisplay}" Width="130" />
-                    <DataGridTextColumn Header="E-value" Binding="{Binding EvalueDisplay}" Width="100" />
-                    <DataGridTextColumn Header="Bit score" Binding="{Binding BitScoreDisplay}" Width="90" />
-                    <DataGridTextColumn Header="File" Binding="{Binding GenomeFile}" Width="2*" MinWidth="280" />
-                </DataGrid.Columns>
-                </DataGrid>
-            </Border>
+        <Grid Grid.Row="2" Margin="22,14,22,10">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="10"/><ColumnDefinition Width="*"/><ColumnDefinition Width="10"/><ColumnDefinition Width="*"/><ColumnDefinition Width="10"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+            <ui:Card Grid.Column="0" Padding="14,11"><StackPanel><TextBlock x:Name="TotalMetricText" Text="0" FontSize="23" FontWeight="SemiBold"/><TextBlock Text="Analysed" FontSize="11" Opacity="0.55"/></StackPanel></ui:Card>
+            <ui:Card Grid.Column="2" Padding="14,11"><StackPanel><TextBlock x:Name="PresentMetricText" Text="0" FontSize="23" FontWeight="SemiBold" Foreground="#50D4A8"/><TextBlock Text="Present" FontSize="11" Opacity="0.55"/></StackPanel></ui:Card>
+            <ui:Card Grid.Column="4" Padding="14,11"><StackPanel><TextBlock x:Name="DetectionMetricText" Text="0%" FontSize="23" FontWeight="SemiBold" Foreground="#54DCD3"/><TextBlock Text="Detection rate" FontSize="11" Opacity="0.55"/></StackPanel></ui:Card>
+            <ui:Card Grid.Column="6" Padding="14,11"><StackPanel><TextBlock x:Name="BelowMetricText" Text="0" FontSize="23" FontWeight="SemiBold" Foreground="#F0BA62"/><TextBlock Text="Below thresholds" FontSize="11" Opacity="0.55"/></StackPanel></ui:Card>
         </Grid>
+
+        <Grid Grid.Row="3" Margin="22,0,22,10">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="320"/><ColumnDefinition Width="10"/><ColumnDefinition Width="190"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+            <TextBox x:Name="SearchTextBox" ToolTip="Search sample, contig or file" TextChanged="FilterChanged" Height="36" VerticalContentAlignment="Center" />
+            <ComboBox x:Name="StatusFilterComboBox" Grid.Column="2" SelectionChanged="FilterChanged" Height="36">
+                <ComboBoxItem Content="All statuses" IsSelected="True"/><ComboBoxItem Content="Present"/><ComboBoxItem Content="Below thresholds"/><ComboBoxItem Content="No hit"/><ComboBoxItem Content="Error"/>
+            </ComboBox>
+            <TextBlock Grid.Column="4" Text="Double-click a row to inspect its alignment" VerticalAlignment="Center" Opacity="0.5" FontSize="11" />
+        </Grid>
+
+        <Border Grid.Row="4" Margin="22,0,22,22" CornerRadius="11" BorderBrush="#203549" BorderThickness="1" ClipToBounds="True">
+            <DataGrid x:Name="ResultsGrid" AutoGenerateColumns="False" IsReadOnly="True"
+                      CanUserAddRows="False" CanUserDeleteRows="False" CanUserSortColumns="True"
+                      SelectionMode="Single" SelectionUnit="FullRow" MouseDoubleClick="ResultsGrid_MouseDoubleClick"
+                      HeadersVisibility="Column" GridLinesVisibility="Horizontal" RowHeight="40" ColumnHeaderHeight="38"
+                      AlternatingRowBackground="#091827">
+                <DataGrid.RowStyle>
+                    <Style TargetType="DataGridRow">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Status}" Value="Present"><Setter Property="BorderBrush" Value="#3BC999"/><Setter Property="BorderThickness" Value="3,0,0,0"/></DataTrigger>
+                            <DataTrigger Binding="{Binding Status}" Value="Below thresholds"><Setter Property="BorderBrush" Value="#E7AD51"/><Setter Property="BorderThickness" Value="3,0,0,0"/></DataTrigger>
+                            <DataTrigger Binding="{Binding Status}" Value="No hit"><Setter Property="BorderBrush" Value="#72879A"/><Setter Property="BorderThickness" Value="3,0,0,0"/></DataTrigger>
+                            <DataTrigger Binding="{Binding Status}" Value="Error"><Setter Property="BorderBrush" Value="#E56C79"/><Setter Property="BorderThickness" Value="3,0,0,0"/></DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.RowStyle>
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Sample" Binding="{Binding GenomeName}" Width="165"/>
+                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="140"/>
+                    <DataGridTextColumn Header="Identity" Binding="{Binding IdentityDisplay}" Width="90"/>
+                    <DataGridTextColumn Header="Coverage" Binding="{Binding CoverageDisplay}" Width="90"/>
+                    <DataGridTextColumn Header="Subject / contig" Binding="{Binding SubjectId}" Width="*" MinWidth="210"/>
+                    <DataGridTextColumn Header="Coordinates" Binding="{Binding CoordinatesDisplay}" Width="130"/>
+                    <DataGridTextColumn Header="E-value" Binding="{Binding EvalueDisplay}" Width="100"/>
+                    <DataGridTextColumn Header="Bit score" Binding="{Binding BitScoreDisplay}" Width="90"/>
+                    <DataGridTextColumn Header="Source file" Binding="{Binding GenomeFile}" Width="2*" MinWidth="260"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
     </Grid>
 </ui:FluentWindow>

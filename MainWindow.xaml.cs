@@ -21,6 +21,8 @@ public partial class MainWindow : FluentWindow
     public MainWindow()
     {
         InitializeComponent();
+        var version = typeof(MainWindow).Assembly.GetName().Version;
+        VersionText.Text = version is null ? "Version" : $"Version {version.Major}.{version.Minor}.{version.Build}";
         Loaded += MainWindow_Loaded;
         Closing += MainWindow_Closing;
     }
@@ -273,6 +275,18 @@ public partial class MainWindow : FluentWindow
         foreach (var hit in item.Hits) window.AddHit(hit);
         window.Show();
         StatusText.Text = $"Reopened analysis from {item.CreatedAt.LocalDateTime:g}.";
+    }
+
+    private void LatestResults_Click(object sender, RoutedEventArgs e)
+    {
+        if (_resultsWindow is { IsVisible: true })
+        {
+            _resultsWindow.WindowState = WindowState.Normal;
+            _resultsWindow.Activate();
+            return;
+        }
+
+        History_Click(sender, e);
     }
 
     private async void Diagnostics_Click(object sender, RoutedEventArgs e)

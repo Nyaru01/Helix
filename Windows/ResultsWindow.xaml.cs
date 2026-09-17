@@ -60,6 +60,11 @@ public partial class ResultsWindow : FluentWindow
         var below = _hits.Count(h => h.Status == "Below thresholds");
         var noHit = _hits.Count(h => h.Status == "No hit");
         var errors = _hits.Count(h => h.Status == "Error");
+        var detectionRate = _hits.Count == 0 ? 0 : present * 100.0 / _hits.Count;
+        TotalMetricText.Text = _hits.Count.ToString();
+        PresentMetricText.Text = present.ToString();
+        DetectionMetricText.Text = $"{detectionRate:F0}%";
+        BelowMetricText.Text = below.ToString();
         SummaryText.Text = $"{_hits.Count} analysed · {present} present · {below} below thresholds · {noHit} no hit" + (errors > 0 ? $" · {errors} errors" : "");
     }
 
