@@ -54,13 +54,17 @@ if (-not $Blastn) {
 }
 $BinDir = $Blastn.Directory.FullName
 
-$Required = @("blastn.exe", "blastp.exe", "tblastn.exe")
+$Required = @("blastn.exe", "blastp.exe", "tblastn.exe", "makeblastdb.exe")
 foreach ($Name in $Required) {
     $Source = Join-Path $BinDir $Name
     if (-not (Test-Path $Source)) {
         throw "$Name was not found in $BinDir"
     }
     Copy-Item $Source -Destination $StageDir -Force
+    $Manifest = "$Source.manifest"
+    if (Test-Path $Manifest) {
+        Copy-Item $Manifest -Destination $StageDir -Force
+    }
 }
 
 # Include native DLLs shipped by NCBI, if present.

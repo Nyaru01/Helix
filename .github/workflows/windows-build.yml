@@ -17,14 +17,12 @@ jobs:
       - name: Prepare bundled NCBI BLAST+
         shell: pwsh
         run: ./prepare-blast.ps1
-      - name: Restore
-        run: dotnet restore LocalBlast.Wpf.csproj
       - name: Test
-        run: dotnet test LocalBlast.Tests/LocalBlast.Tests.csproj --no-restore --configuration Release
-      - name: Publish portable executable
-        run: dotnet publish LocalBlast.Wpf.csproj --no-restore --configuration Release --runtime win-x64 --self-contained true --output artifacts/HelixBlast
+        run: dotnet test LocalBlast.Tests/LocalBlast.Tests.csproj --configuration Release
+      - name: Publish portable application
+        run: dotnet publish LocalBlast.Wpf.csproj --configuration Release --runtime win-x64 --self-contained true --output artifacts/HelixBlast
       - uses: actions/upload-artifact@v4
         with:
           name: HelixBlast-win-x64
-          path: artifacts/HelixBlast/HelixBlast.exe
+          path: artifacts/HelixBlast/
           if-no-files-found: error

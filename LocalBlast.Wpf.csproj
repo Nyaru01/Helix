@@ -8,7 +8,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>HelixBlast</AssemblyName>
     <RootNamespace>LocalBlast</RootNamespace>
-    <Version>0.3.9</Version>
+    <Version>0.3.10</Version>
     <ApplicationIcon Condition="Exists('app.ico')">app.ico</ApplicationIcon>
   </PropertyGroup>
 

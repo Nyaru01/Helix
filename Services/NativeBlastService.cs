@@ -20,7 +20,7 @@ public sealed class NativeBlastService
         "HelixBlast", "blast", BlastVersion, "bin");
 
     private static bool HasRequiredExecutables(string directory) =>
-        new[] { "blastn.exe", "blastp.exe", "tblastn.exe" }
+        new[] { "blastn.exe", "blastp.exe", "tblastn.exe", "makeblastdb.exe" }
             .All(name => File.Exists(Path.Combine(directory, name)));
 
     public async Task<(bool Ok, string Message)> CheckAsync(string program, CancellationToken cancellationToken = default)

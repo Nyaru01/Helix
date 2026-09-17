@@ -8,6 +8,7 @@ obj/
 publish/
 publishfull/
 dist/
+artifacts/
 .build-blast/
 Resources/blast-win64-*.zip
 *.pdb
