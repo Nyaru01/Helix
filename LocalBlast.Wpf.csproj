@@ -8,7 +8,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>HelixBlast</AssemblyName>
     <RootNamespace>LocalBlast</RootNamespace>
-    <Version>0.3.4</Version>
+    <Version>0.3.5</Version>
     <ApplicationIcon Condition="Exists('app.ico')">app.ico</ApplicationIcon>
   </PropertyGroup>
 
@@ -20,11 +20,6 @@
     <EmbeddedResource Include="Resources\blast-win64-2.17.0.zip"
                       LogicalName="LocalBlast.Resources.blast-win64-2.17.0.zip" />
     <Resource Include="app.ico" />
-    <Resource Include="Resources\HelixBlastLogo.png" />
-    <Resource Include="Resources\SplashFrame01.png" />
-    <Resource Include="Resources\SplashFrame02.png" />
-    <Resource Include="Resources\SplashFrame03.png" />
-    <Resource Include="Resources\SplashFrame04.png" />
   </ItemGroup>
 
   <ItemGroup>

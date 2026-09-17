@@ -1,6 +1,6 @@
 ; Build with Inno Setup 6: iscc installer\HelixBlast.iss
 #define MyAppName "Helix Blast"
-#define MyAppVersion "0.3.4"
+#define MyAppVersion "0.3.5"
 #define MyAppPublisher "Helix Blast"
 #define MyAppExeName "HelixBlast.exe"
 
@@ -21,6 +21,8 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 UninstallDisplayIcon={app}\{#MyAppExeName}
 SetupIconFile=..\app.ico
+CloseApplications=yes
+RestartApplications=yes
 
 [Files]
 Source: "..\publishfull\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
@@ -34,4 +36,4 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: de
 Name: "desktopicon"; Description: "Create a desktop shortcut"; GroupDescription: "Additional shortcuts:"
 
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "Launch Helix Blast"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#MyAppExeName}"; Description: "Launch Helix Blast"; Flags: nowait postinstall

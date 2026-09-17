@@ -66,10 +66,25 @@ public partial class App : System.Windows.Application
         {
             var update = await UpdateService.CheckAsync();
             if (update is null) return;
-            var box = new Wpf.Ui.Controls.MessageBox { Owner = window, Title = "Update available", Content = $"Helix Blast {update.Version} is available.", CloseButtonText = "Open download" };
-            await box.ShowDialogAsync();
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(update.DownloadUrl) { UseShellExecute = true });
+            var box = new Wpf.Ui.Controls.MessageBox
+            {
+                Owner = window,
+                Title = "Update available",
+                Content = $"Helix Blast {update.Version} is available. It can be installed automatically, then the application will restart.",
+                PrimaryButtonText = "Install now",
+                CloseButtonText = "Later"
+            };
+            if (await box.ShowDialogAsync() != Wpf.Ui.Controls.MessageBoxResult.Primary) return;
+
+            window.IsEnabled = false;
+            var installerPath = await UpdateService.DownloadAsync(update);
+            UpdateService.LaunchInstaller(installerPath);
+            Current.Shutdown();
         }
-        catch { /* Updates must never block a local analysis. */ }
+        catch (Exception ex)
+        {
+            window.IsEnabled = true;
+            AppLogger.Error("Could not install the automatic update.", ex);
+        }
     }
 }

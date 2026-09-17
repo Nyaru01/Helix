@@ -130,6 +130,7 @@
                         <ui:Button Content="Prepare local indexes" Click="PrepareIndexes_Click" Margin="8,0,0,0" />
                         <ui:Button Content="History" Click="History_Click" Margin="8,0,0,0" />
                         <ui:Button Content="About / diagnostics" Click="Diagnostics_Click" Margin="8,0,0,0" />
+                        <ui:Button Content="Check updates" Click="CheckUpdates_Click" Margin="8,0,0,0" />
                     </StackPanel>
                     <TextBlock x:Name="EnvironmentText" Grid.Column="1" Margin="14,7,20,0" Opacity="0.65" TextTrimming="CharacterEllipsis" />
                     <ui:Button x:Name="CancelButton" Grid.Column="2" Content="Cancel" IsEnabled="False" Click="Cancel_Click" MinWidth="100" />

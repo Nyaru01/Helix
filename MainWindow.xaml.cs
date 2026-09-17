@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
 using System.IO;
+using System.Diagnostics;
 
 namespace LocalBlast;
 
@@ -278,6 +279,50 @@ public partial class MainWindow : FluentWindow
     {
         var (ok, message) = await _analysisService.CheckEnvironmentAsync(SelectedProgram);
         await ShowInfoAsync("Helix Blast diagnostics", $"Application: Helix Blast {typeof(MainWindow).Assembly.GetName().Version}\nBLAST: {(ok ? "ready" : "unavailable")}\nLogs: {AppLogger.LogDirectory}\nHistory: {AnalysisHistoryService.GetStoragePath()}\n\n{message}");
+    }
+
+    private async void CheckUpdates_Click(object sender, RoutedEventArgs e)
+    {
+        StatusText.Text = "Checking for updates…";
+        try
+        {
+            var update = await UpdateService.CheckAsync();
+            if (update is null)
+            {
+                StatusText.Text = "Helix Blast is up to date.";
+                await ShowInfoAsync("Updates", "You already have the latest version of Helix Blast.");
+                return;
+            }
+
+            StatusText.Text = $"Version {update.Version} is available.";
+            var box = new Wpf.Ui.Controls.MessageBox
+            {
+                Owner = this,
+                Title = "Update available",
+                Content = $"Helix Blast {update.Version} is available.\n\nThe update will be downloaded and installed automatically, then the application will restart.",
+                PrimaryButtonText = "Install now",
+                CloseButtonText = "Later"
+            };
+            if (await box.ShowDialogAsync() != Wpf.Ui.Controls.MessageBoxResult.Primary)
+            {
+                StatusText.Text = "Update postponed.";
+                return;
+            }
+
+            IsEnabled = false;
+            var progress = new Progress<int>(percent => StatusText.Text = $"Downloading update… {percent}%");
+            var installerPath = await UpdateService.DownloadAsync(update, progress);
+            StatusText.Text = "Installing update…";
+            UpdateService.LaunchInstaller(installerPath);
+            System.Windows.Application.Current.Shutdown();
+        }
+        catch (Exception ex)
+        {
+            IsEnabled = true;
+            StatusText.Text = "Update check failed.";
+            AppLogger.Error("Could not check for updates.", ex);
+            await ShowErrorAsync("Updates", "The update could not be downloaded or installed. Check your internet connection and try again.");
+        }
     }
 
     private (SequenceType Query, SequenceType Subject) ExpectedTypes() => SelectedProgram switch
