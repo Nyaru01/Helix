@@ -226,17 +226,31 @@ public partial class MainWindow : FluentWindow
 
     private async void PrepareIndexes_Click(object sender, RoutedEventArgs e)
     {
+        PrepareIndexesButton.IsEnabled = false;
         try
         {
-            var analysis = _analysisService.Prepare(new AnalysisRequest(SelectedProgram, QueryTextBox.Text, FolderTextBox.Text.Trim(), 0, 0, 1));
-            SearchProgressBar.Maximum = analysis.GenomeFiles.Count;
+            var folder = FolderTextBox.Text.Trim();
+            StatusText.Text = "Finding compatible FASTA files…";
+            var progress = new Progress<SearchProgress>(p =>
+            {
+                SearchProgressBar.Maximum = p.Total;
+                SearchProgressBar.Value = p.Completed;
+                StatusText.Text = $"Index {p.Completed}/{p.Total} · {p.CurrentFile}";
+            });
             SearchProgressBar.Value = 0;
-            StatusText.Text = "Preparing local BLAST indexes…";
-            var progress = new Progress<SearchProgress>(p => { SearchProgressBar.Value = p.Completed; StatusText.Text = $"Index {p.Completed}/{p.Total} · {p.CurrentFile}"; });
-            await _analysisService.PrepareIndexesAsync(analysis, progress, CancellationToken.None);
+            await _analysisService.PrepareIndexesAsync(SelectedProgram, folder, progress, CancellationToken.None);
             StatusText.Text = "Local indexes ready. Subsequent analyses of unchanged files will be faster.";
         }
-        catch (Exception ex) { AppLogger.Error("Could not prepare local indexes.", ex); await ShowErrorAsync("Prepare local indexes", ex.Message); }
+        catch (Exception ex)
+        {
+            StatusText.Text = "Index preparation failed.";
+            AppLogger.Error("Could not prepare local indexes.", ex);
+            await ShowErrorAsync("Prepare local indexes", ex.Message);
+        }
+        finally
+        {
+            PrepareIndexesButton.IsEnabled = true;
+        }
     }
 
     private async void RunBlast_Click(object sender, RoutedEventArgs e)
@@ -325,8 +339,14 @@ public partial class MainWindow : FluentWindow
 
     private void History_Click(object sender, RoutedEventArgs e)
     {
+        StatusText.Text = "Loading analysis history…";
         var item = AnalysisHistoryService.Load().FirstOrDefault();
-        if (item is null) { _ = ShowInfoAsync("Analysis history", "No completed analysis has been saved yet."); return; }
+        if (item is null)
+        {
+            StatusText.Text = "No completed analysis found.";
+            _ = ShowInfoAsync("Analysis history", $"No completed analysis has been saved yet.\n\nHistory file:\n{AnalysisHistoryService.GetStoragePath()}");
+            return;
+        }
         _resultQueryLabel = item.QueryLabel;
         _resultProgram = item.Program;
         _resultIdentity = item.MinimumIdentity;

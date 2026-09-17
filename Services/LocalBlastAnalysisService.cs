@@ -64,4 +64,18 @@ public sealed class LocalBlastAnalysisService
 
     public Task PrepareIndexesAsync(PreparedAnalysis analysis, IProgress<SearchProgress>? progress, CancellationToken cancellationToken)
         => _engine.PrepareIndexesAsync(analysis.Request.Program, analysis.GenomeFiles, progress, cancellationToken);
+
+    public async Task PrepareIndexesAsync(string program, string folderPath,
+        IProgress<SearchProgress>? progress, CancellationToken cancellationToken)
+    {
+        if (!Directory.Exists(folderPath))
+            throw new InvalidOperationException("Choose a valid FASTA collection folder first.");
+
+        var subjectType = program == "blastp" ? SequenceType.Protein : SequenceType.Nucleotide;
+        var (genomes, _) = FastaService.DiscoverFastaFiles(folderPath, subjectType);
+        if (genomes.Count == 0)
+            throw new InvalidOperationException("No compatible FASTA files were detected in the selected folder.");
+
+        await _engine.PrepareIndexesAsync(program, genomes, progress, cancellationToken);
+    }
 }
