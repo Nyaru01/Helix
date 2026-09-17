@@ -9,18 +9,30 @@ using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
 using System.IO;
 using System.Diagnostics;
+using System.Collections.ObjectModel;
+using System.Windows.Data;
+using System.Windows.Input;
+using System.ComponentModel;
 
 namespace LocalBlast;
 
 public partial class MainWindow : FluentWindow
 {
     private readonly LocalBlastAnalysisService _analysisService = new();
+    private readonly ObservableCollection<BlastHit> _hits = new();
+    private readonly ICollectionView _resultView;
     private CancellationTokenSource? _searchCts;
-    private ResultsWindow? _resultsWindow;
+    private string _resultQueryLabel = "query";
+    private string _resultProgram = "blastn";
+    private double _resultIdentity;
+    private double _resultCoverage;
 
     public MainWindow()
     {
         InitializeComponent();
+        _resultView = CollectionViewSource.GetDefaultView(_hits);
+        _resultView.Filter = MatchesResultFilter;
+        ResultsGrid.ItemsSource = _resultView;
         var version = typeof(MainWindow).Assembly.GetName().Version;
         VersionText.Text = version is null ? "Version" : $"Version {version.Major}.{version.Minor}.{version.Build}";
         Loaded += MainWindow_Loaded;
@@ -28,6 +40,35 @@ public partial class MainWindow : FluentWindow
     }
 
     private string SelectedProgram => (ProgramComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "blastn";
+
+    private bool MatchesResultFilter(object item)
+    {
+        if (item is not BlastHit hit) return false;
+        var status = (ResultsStatusComboBox.SelectedItem as ComboBoxItem)?.Content?.ToString();
+        if (!string.IsNullOrWhiteSpace(status) && status != "All statuses" && hit.Status != status) return false;
+        var term = ResultsSearchTextBox.Text?.Trim();
+        return string.IsNullOrWhiteSpace(term) ||
+               string.Join(' ', hit.GenomeName, hit.GenomeFile, hit.SubjectId, hit.Status)
+                   .Contains(term, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void ResultsFilterChanged(object sender, RoutedEventArgs e) => _resultView?.Refresh();
+
+    private void UpdateResultsSummary()
+    {
+        var present = _hits.Count(hit => hit.Status == "Present");
+        var below = _hits.Count(hit => hit.Status == "Below thresholds");
+        var noHit = _hits.Count(hit => hit.Status == "No hit");
+        var errors = _hits.Count(hit => hit.Status == "Error");
+        ResultsSummaryText.Text = _hits.Count == 0
+            ? "No results yet. Run an analysis to populate this table."
+            : $"{_hits.Count} analysed · {present} present · {below} below thresholds · {noHit} no hit" +
+              (errors > 0 ? $" · {errors} errors" : "");
+        var hasResults = _hits.Count > 0;
+        ExportCsvButton.IsEnabled = hasResults;
+        ExportHtmlButton.IsEnabled = hasResults;
+        ExportPdfButton.IsEnabled = hasResults;
+    }
 
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
@@ -203,8 +244,12 @@ public partial class MainWindow : FluentWindow
                 SelectedProgram, QueryTextBox.Text, folder, identity, coverage, evalue));
 
             var queryLabel = analysis.QueryHeader.StartsWith('>') ? analysis.QueryHeader[1..].Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "query" : "query";
-            _resultsWindow = new ResultsWindow(queryLabel, SelectedProgram, identity, coverage) { Owner = this };
-            _resultsWindow.Show();
+            _resultQueryLabel = queryLabel;
+            _resultProgram = SelectedProgram;
+            _resultIdentity = identity;
+            _resultCoverage = coverage;
+            _hits.Clear();
+            UpdateResultsSummary();
 
             _searchCts = new CancellationTokenSource();
             RunButton.IsEnabled = false;
@@ -219,26 +264,23 @@ public partial class MainWindow : FluentWindow
                 SearchProgressBar.Value = p.Completed;
                 StatusText.Text = $"{p.Completed}/{p.Total} · {p.CurrentFile}";
                 if (p.Hit is not null)
-                    _resultsWindow?.AddHit(p.Hit);
+                {
+                    _hits.Add(p.Hit);
+                    UpdateResultsSummary();
+                }
             });
 
             await _analysisService.SearchAsync(analysis, progress, _searchCts.Token);
-            // Results can be closed while a search is still running. History must never turn
-            // an otherwise successful BLAST search into an application error.
-            var completedHits = _resultsWindow?.Snapshot();
-            if (completedHits is not null)
+            try
             {
-                try
-                {
-                    await AnalysisHistoryService.SaveAsync(new AnalysisHistoryEntry(DateTimeOffset.Now, queryLabel,
-                        SelectedProgram, identity, coverage, folder, completedHits.ToList()));
-                }
-                catch (Exception historyException)
-                {
-                    AppLogger.Error("The search succeeded but its history entry could not be saved.", historyException);
-                }
+                await AnalysisHistoryService.SaveAsync(new AnalysisHistoryEntry(DateTimeOffset.Now, queryLabel,
+                    SelectedProgram, identity, coverage, folder, _hits.ToList()));
             }
-            StatusText.Text = "Search finished. Double-click a result to inspect the BLAST alignment.";
+            catch (Exception historyException)
+            {
+                AppLogger.Error("The search succeeded but its history entry could not be saved.", historyException);
+            }
+            StatusText.Text = "Search finished. Results are shown below the query sequence.";
         }
         catch (OperationCanceledException)
         {
@@ -271,22 +313,99 @@ public partial class MainWindow : FluentWindow
     {
         var item = AnalysisHistoryService.Load().FirstOrDefault();
         if (item is null) { _ = ShowInfoAsync("Analysis history", "No completed analysis has been saved yet."); return; }
-        var window = new ResultsWindow(item.QueryLabel, item.Program, item.MinimumIdentity, item.MinimumCoverage) { Owner = this };
-        foreach (var hit in item.Hits) window.AddHit(hit);
-        window.Show();
-        StatusText.Text = $"Reopened analysis from {item.CreatedAt.LocalDateTime:g}.";
+        _resultQueryLabel = item.QueryLabel;
+        _resultProgram = item.Program;
+        _resultIdentity = item.MinimumIdentity;
+        _resultCoverage = item.MinimumCoverage;
+        _hits.Clear();
+        foreach (var hit in item.Hits) _hits.Add(hit);
+        UpdateResultsSummary();
+        StatusText.Text = $"Last analysis loaded from {item.CreatedAt.LocalDateTime:g}.";
     }
 
-    private void LatestResults_Click(object sender, RoutedEventArgs e)
+    private void ResultsGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
-        if (_resultsWindow is { IsVisible: true })
-        {
-            _resultsWindow.WindowState = WindowState.Normal;
-            _resultsWindow.Activate();
-            return;
-        }
+        if (ResultsGrid.SelectedItem is BlastHit hit)
+            new AlignmentWindow(hit) { Owner = this }.ShowDialog();
+    }
 
-        History_Click(sender, e);
+    private async void ExportCsv_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new Microsoft.Win32.SaveFileDialog
+        {
+            Title = "Export BLAST results",
+            Filter = "CSV files|*.csv",
+            FileName = $"HelixBlast_{DateTime.Now:yyyyMMdd_HHmm}.csv"
+        };
+        if (dialog.ShowDialog(this) != true) return;
+
+        try
+        {
+            await ResultsExportService.ExportCsvAsync(dialog.FileName, _resultQueryLabel, _resultProgram,
+                _resultIdentity, _resultCoverage, _hits.ToList());
+            await ShowInfoAsync("Export complete", $"Results saved to:\n{dialog.FileName}");
+        }
+        catch (Exception ex)
+        {
+            AppLogger.Error("Could not export CSV results.", ex);
+            await ShowErrorAsync("Export failed", ex.Message);
+        }
+    }
+
+    private async void ExportHtml_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new Microsoft.Win32.SaveFileDialog
+        {
+            Title = "Export Helix Blast HTML report",
+            Filter = "HTML files|*.html",
+            FileName = $"HelixBlast_Report_{DateTime.Now:yyyyMMdd_HHmm}.html"
+        };
+        if (dialog.ShowDialog(this) != true) return;
+
+        try
+        {
+            await ResultsExportService.ExportHtmlAsync(dialog.FileName, _resultQueryLabel, _resultProgram,
+                _resultIdentity, _resultCoverage, _hits.ToList());
+            var box = new Wpf.Ui.Controls.MessageBox
+            {
+                Owner = this,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Title = "Report ready",
+                Content = $"HTML report saved to:\n{dialog.FileName}",
+                PrimaryButtonText = "Open report",
+                CloseButtonText = "Close"
+            };
+            if (await box.ShowDialogAsync() == Wpf.Ui.Controls.MessageBoxResult.Primary)
+                Process.Start(new ProcessStartInfo(dialog.FileName) { UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            AppLogger.Error("Could not export the HTML report.", ex);
+            await ShowErrorAsync("Report export failed", ex.Message);
+        }
+    }
+
+    private async void ExportPdf_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new Microsoft.Win32.SaveFileDialog
+        {
+            Title = "Export Helix Blast PDF report",
+            Filter = "PDF files|*.pdf",
+            FileName = $"HelixBlast_Report_{DateTime.Now:yyyyMMdd_HHmm}.pdf"
+        };
+        if (dialog.ShowDialog(this) != true) return;
+
+        try
+        {
+            await ResultsExportService.ExportPdfAsync(dialog.FileName, _resultQueryLabel, _resultProgram,
+                _resultIdentity, _resultCoverage, _hits.ToList());
+            await ShowInfoAsync("Report ready", $"PDF report saved to:\n{dialog.FileName}");
+        }
+        catch (Exception ex)
+        {
+            AppLogger.Error("Could not export the PDF report.", ex);
+            await ShowErrorAsync("PDF export failed", ex.Message);
+        }
     }
 
     private async void Diagnostics_Click(object sender, RoutedEventArgs e)
@@ -312,6 +431,7 @@ public partial class MainWindow : FluentWindow
             var box = new Wpf.Ui.Controls.MessageBox
             {
                 Owner = this,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 Title = "Update available",
                 Content = $"Helix Blast {update.Version} is available.\n\nThe update will be downloaded and installed automatically, then the application will restart.",
                 PrimaryButtonText = "Install now",

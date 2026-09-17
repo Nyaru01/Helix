@@ -138,7 +138,7 @@ public partial class ResultsWindow : FluentWindow
 
     private async Task ShowInfoAsync(string title, string message)
     {
-        var box = new Wpf.Ui.Controls.MessageBox { Owner = this, Title = title, Content = message, CloseButtonText = "OK" };
+        var box = new Wpf.Ui.Controls.MessageBox { Owner = this, WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner, Title = title, Content = message, CloseButtonText = "OK" };
         await box.ShowDialogAsync();
     }
 
@@ -147,11 +147,13 @@ public partial class ResultsWindow : FluentWindow
         var box = new Wpf.Ui.Controls.MessageBox
         {
             Owner = this,
+            WindowStartupLocation = System.Windows.WindowStartupLocation.CenterOwner,
             Title = "Report ready",
             Content = $"HTML report saved to:\n{path}",
-            CloseButtonText = "Open"
+            PrimaryButtonText = "Open report",
+            CloseButtonText = "Close"
         };
-        await box.ShowDialogAsync();
-        Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
+        if (await box.ShowDialogAsync() == MessageBoxResult.Primary)
+            Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
     }
 }

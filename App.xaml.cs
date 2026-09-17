@@ -80,6 +80,7 @@ public partial class App : System.Windows.Application
             var box = new Wpf.Ui.Controls.MessageBox
             {
                 Owner = window,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 Title = "Update available",
                 Content = $"Helix Blast {update.Version} is available. It can be installed automatically, then the application will restart.",
                 PrimaryButtonText = "Install now",
