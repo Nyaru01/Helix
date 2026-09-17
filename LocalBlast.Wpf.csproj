@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>HelixBlast</AssemblyName>
+    <RootNamespace>LocalBlast</RootNamespace>
+    <Version>0.3.1</Version>
+    <ApplicationIcon Condition="Exists('app.ico')">app.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="WPF-UI" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\blast-win64-2.17.0.zip"
+                      LogicalName="LocalBlast.Resources.blast-win64-2.17.0.zip" />
+    <Resource Include="app.ico" />
+    <Resource Include="Resources\HelixBlastLogo.png" />
+    <Resource Include="Resources\SplashFrame01.png" />
+    <Resource Include="Resources\SplashFrame02.png" />
+    <Resource Include="Resources\SplashFrame03.png" />
+    <Resource Include="Resources\SplashFrame04.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="LocalBlast.Tests\**\*.cs" />
+    <EmbeddedResource Remove="LocalBlast.Tests\**\*" />
+    <None Remove="LocalBlast.Tests\**\*" />
+  </ItemGroup>
+</Project>

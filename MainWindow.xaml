@@ -1,0 +1,145 @@
+<ui:FluentWindow x:Class="LocalBlast.MainWindow"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                 xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                 mc:Ignorable="d"
+                 Title="Helix Blast"
+                 Width="1040"
+                 Height="780"
+                 MinWidth="860"
+                 MinHeight="680"
+                 WindowStartupLocation="CenterScreen"
+                 Icon="/app.ico"
+                 ExtendsContentIntoTitleBar="False">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <ui:TitleBar Grid.Row="0" Title="Helix Blast" />
+        <Grid Grid.Row="1" Margin="20,12,20,18">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="10" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="10" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="14" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="8" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <ui:Card Grid.Row="0" Padding="16">
+                    <StackPanel>
+                        <TextBlock Text="1. Query sequence" FontSize="18" FontWeight="SemiBold" />
+                        <TextBlock Text="Paste a nucleotide/protein sequence, or load a FASTA file."
+                                   Margin="0,3,0,8" Opacity="0.65" />
+                        <TextBox x:Name="QueryTextBox"
+                                 Height="112"
+                                 AcceptsReturn="True"
+                                 AcceptsTab="True"
+                                 VerticalScrollBarVisibility="Auto"
+                                 HorizontalScrollBarVisibility="Auto"
+                                 FontFamily="Cascadia Mono, Consolas"
+                                 FontSize="13"
+                                 TextWrapping="NoWrap"
+                                 SpellCheck.IsEnabled="False"
+                                 AllowDrop="True" Drop="QueryTextBox_Drop" DragOver="FileDrop_DragOver" />
+                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                            <ui:Button Content="Load query FASTA" Click="LoadQuery_Click" />
+                            <TextBlock x:Name="QueryInfoText" Margin="14,7,0,0" Opacity="0.6" />
+                        </StackPanel>
+                    </StackPanel>
+                </ui:Card>
+
+                <ui:Card Grid.Row="2" Padding="16">
+                    <StackPanel>
+                        <TextBlock Text="2. FASTA collection" FontSize="18" FontWeight="SemiBold" />
+                        <TextBlock Text="Each compatible FASTA file is treated as one genome/sample."
+                                   Margin="0,3,0,8" Opacity="0.65" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="12" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="FolderTextBox" Grid.Column="0" Height="36" VerticalContentAlignment="Center" LostFocus="FolderTextBox_LostFocus" AllowDrop="True" Drop="FolderTextBox_Drop" DragOver="FileDrop_DragOver" />
+                            <ui:Button Grid.Column="2" Content="Browse…" Click="BrowseFolder_Click" MinWidth="110" />
+                        </Grid>
+                        <TextBlock x:Name="FolderInfoText" Margin="0,7,0,0" Opacity="0.65" TextWrapping="Wrap" />
+                    </StackPanel>
+                </ui:Card>
+
+                <ui:Card Grid.Row="4" Padding="16">
+                    <StackPanel>
+                        <TextBlock Text="3. BLAST settings" FontSize="18" FontWeight="SemiBold" />
+                        <Grid Margin="0,10,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1.1*" />
+                                <ColumnDefinition Width="20" />
+                                <ColumnDefinition Width="1*" />
+                                <ColumnDefinition Width="20" />
+                                <ColumnDefinition Width="1*" />
+                                <ColumnDefinition Width="20" />
+                                <ColumnDefinition Width="1*" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Program" Margin="0,0,0,6" Opacity="0.7" />
+                                <ComboBox x:Name="ProgramComboBox" Height="36" SelectionChanged="ProgramComboBox_SelectionChanged">
+                                    <ComboBoxItem Content="blastn" IsSelected="True" />
+                                    <ComboBoxItem Content="tblastn" />
+                                    <ComboBoxItem Content="blastp" />
+                                </ComboBox>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="Minimum identity (%)" Margin="0,0,0,6" Opacity="0.7" />
+                                <TextBox x:Name="IdentityTextBox" Text="80" Height="36" VerticalContentAlignment="Center" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="4">
+                                <TextBlock Text="Minimum query coverage (%)" Margin="0,0,0,6" Opacity="0.7" />
+                                <TextBox x:Name="CoverageTextBox" Text="80" Height="36" VerticalContentAlignment="Center" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="6">
+                                <TextBlock Text="E-value" Margin="0,0,0,6" Opacity="0.7" />
+                                <TextBox x:Name="EvalueTextBox" Text="1e-10" Height="36" VerticalContentAlignment="Center" />
+                            </StackPanel>
+                        </Grid>
+                        <TextBlock x:Name="ProgramHelpText"
+                                   Text="blastn: nucleotide query → nucleotide FASTA files"
+                                   Margin="0,8,0,0" Opacity="0.6" />
+                    </StackPanel>
+                </ui:Card>
+
+                <Grid Grid.Row="6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                        <ui:Button Content="Check bundled BLAST" Click="CheckEnvironment_Click" />
+                        <ui:Button Content="Prepare local indexes" Click="PrepareIndexes_Click" Margin="8,0,0,0" />
+                        <ui:Button Content="History" Click="History_Click" Margin="8,0,0,0" />
+                        <ui:Button Content="About / diagnostics" Click="Diagnostics_Click" Margin="8,0,0,0" />
+                    </StackPanel>
+                    <TextBlock x:Name="EnvironmentText" Grid.Column="1" Margin="14,7,20,0" Opacity="0.65" TextTrimming="CharacterEllipsis" />
+                    <ui:Button x:Name="CancelButton" Grid.Column="2" Content="Cancel" IsEnabled="False" Click="Cancel_Click" MinWidth="100" />
+                    <ui:Button x:Name="RunButton" Grid.Column="4" Content="RUN BLAST" Appearance="Primary" Click="RunBlast_Click" MinWidth="170" />
+                </Grid>
+
+                <StackPanel Grid.Row="8">
+                    <ProgressBar x:Name="SearchProgressBar" Height="7" Minimum="0" Maximum="100" Value="0" />
+                    <TextBlock x:Name="StatusText" Margin="0,7,0,0" Text="Ready." Opacity="0.65" />
+                </StackPanel>
+        </Grid>
+    </Grid>
+</ui:FluentWindow>

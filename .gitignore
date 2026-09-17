@@ -1,0 +1,12 @@
+bin/
+obj/
+.vs/
+LocalBlast.exe
+bin/
+obj/
+publish/
+publishfull/
+dist/
+.build-blast/
+Resources/blast-win64-*.zip
+*.pdb

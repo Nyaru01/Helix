@@ -1,0 +1,33 @@
+name: Windows build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-test-package:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 8.0.x
+      - name: Prepare bundled NCBI BLAST+
+        shell: pwsh
+        run: ./prepare-blast.ps1
+      - name: Restore
+        run: dotnet restore LocalBlast.Wpf.csproj
+      - name: Test
+        run: dotnet test LocalBlast.Tests/LocalBlast.Tests.csproj --no-restore --configuration Release
+      - name: Publish portable executable
+        run: >-
+          dotnet publish LocalBlast.Wpf.csproj --no-restore --configuration Release --runtime win-x64
+          --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:EnableCompressionInSingleFile=true --output artifacts/LocalBlast
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LocalBlast-win-x64
+          path: artifacts/LocalBlast/LocalBlast.exe
+          if-no-files-found: error
