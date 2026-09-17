@@ -22,12 +22,9 @@ jobs:
       - name: Test
         run: dotnet test LocalBlast.Tests/LocalBlast.Tests.csproj --no-restore --configuration Release
       - name: Publish portable executable
-        run: >-
-          dotnet publish LocalBlast.Wpf.csproj --no-restore --configuration Release --runtime win-x64
-          --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
-          -p:EnableCompressionInSingleFile=true --output artifacts/LocalBlast
+        run: dotnet publish LocalBlast.Wpf.csproj --no-restore --configuration Release --runtime win-x64 --self-contained true --output artifacts/HelixBlast
       - uses: actions/upload-artifact@v4
         with:
-          name: LocalBlast-win-x64
-          path: artifacts/LocalBlast/LocalBlast.exe
+          name: HelixBlast-win-x64
+          path: artifacts/HelixBlast/HelixBlast.exe
           if-no-files-found: error
